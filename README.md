@@ -5,6 +5,7 @@ Porting to Java of the ffAPI python library some of you guys are using to interf
 Please note:
   - Files upload still not supported
   - Not as tested as the py version
+  - I will probably remove public commands endpoints soon
 
 ### Sample usage
 
