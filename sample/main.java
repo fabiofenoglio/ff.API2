@@ -17,7 +17,7 @@ public class main
 	/*
 	 * API_KEY must be a valid registered API key.
 	 * The following key is a public, limited access one
-	 * you can user just for testing
+	 * you can use just for testing
 	 */
 	public static final String API_KEY = "6015c941571fdde37fec1f485568a7ff";
 	
