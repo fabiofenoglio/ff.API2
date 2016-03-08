@@ -42,11 +42,17 @@ else {
 
 i'm adding hooks should you need it:
 ```sh
-// attach an hook to log requests
-provider.registerHook("beforeRequest", new ApiHook() {
+provider.registerHook(ApiHookPoints.BEFORE_REQUEST, new ApiHook() {
 	@Override
-	public void hook(HashMap<String, Object> data) {
-		System.out.println("sending api request to " + (String)data.get("url"));
+	public void hook(ApiHookDataBundle data) {
+		System.out.println("sending api request to " + (String)data.get("url") + " ...");
+	}
+});
+	
+provider.registerHook(ApiHookPoints.REQUEST_EXCEPTION, new ApiHook() {
+	@Override
+	public void hook(ApiHookDataBundle data) {
+		System.out.println("error sending api request: " + ((Exception)data.get("exception")).getMessage());
 	}
 });
 ```
