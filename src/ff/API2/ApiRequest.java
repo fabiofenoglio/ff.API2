@@ -77,15 +77,13 @@ public class ApiRequest {
 		    connection.setDoOutput(true);
 		    
 		    // hook point: beforeRequest
-		    String hookKey = "beforeRequest";
+		    Integer hookKey = ApiHookPoints.BEFORE_REQUEST;
 		    if (this.provider.hasHooks(hookKey)) {
-		    	HashMap<String, Object> hookData = new HashMap<String, Object>();
-		    	hookData.put("url", url.toString());
-		    	hookData.put("request", this);
-		    	hookData.put("connection", connection);
-		    	for (ApiHook hookInstance : this.provider.getHooks(hookKey)) {
-		    		hookInstance.hook(hookData);
-		    	}
+		    	this.provider.processHook(hookKey, ApiHookDataBundle.create()
+	    			.put("url", url.toString())
+	    			.put("request", this)
+	    			.put("connection", connection)
+    			);
 		    }
 
 		    // Output stream : send request
@@ -104,10 +102,31 @@ public class ApiRequest {
 		    }
 		    rd.close();
 		    
+		    // hook point: afterRequest
+		    hookKey = ApiHookPoints.AFTER_REQUEST;
+		    if (this.provider.hasHooks(hookKey)) {
+		    	this.provider.processHook(hookKey, ApiHookDataBundle.create()
+	    			.put("url", url.toString())
+	    			.put("request", this)
+	    			.put("connection", connection)
+	    			.put("response", response.toString())
+    			);
+		    }
+		    
 		    // Build ApiResponse from raw response string
 		    return ApiResponse.fromString(response.toString());
 		  } 
 		catch (Exception e) {
+			// hook point: requestException
+			Integer hookKey = ApiHookPoints.REQUEST_EXCEPTION;
+		    if (this.provider.hasHooks(hookKey)) {
+		    	this.provider.processHook(hookKey, ApiHookDataBundle.create()
+	    			.put("request", this)
+	    			.put("connection", connection)
+	    			.put("exception", e)
+    			);
+		    }
+		    
 			if(connection != null) {
 				connection.disconnect();
 				connection = null;

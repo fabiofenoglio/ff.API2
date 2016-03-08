@@ -4,7 +4,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class ApiResponse {
-
+	public static final long SUCCESS_CODE = 1;
+	
 	/*
 	 * True if the http request has been completed and a response
 	 * has been received
@@ -78,6 +79,6 @@ public class ApiResponse {
 		// fill rapid check fields
 		this.hasData = data != null;
 		this.requestCompleted = true;
-		this.success = this.code == 1;
+		this.success = this.code == ApiResponse.SUCCESS_CODE;
 	}
 }

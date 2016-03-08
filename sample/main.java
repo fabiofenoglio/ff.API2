@@ -1,4 +1,5 @@
 import test0.FileSystemProvider;
+import test0.Output;
 import test0.Config;
 
 import java.io.BufferedReader;
@@ -7,6 +8,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 import ff.API2.ApiHook;
+import ff.API2.ApiHookDataBundle;
+import ff.API2.ApiHookPoints;
 import ff.API2.ApiProvider;
 import ff.API2.ApiRequest;
 import ff.API2.ApiResponse;
@@ -17,11 +20,9 @@ public class main
 	/*
 	 * API_KEY must be a valid registered API key.
 	 * The following key is a public, limited access one
-	 * you can use just for testing
+	 * you can user just for testing
 	 */
 	public static final String API_KEY = "6015c941571fdde37fec1f485568a7ff";
-	
-	public static enum LogLevel {INFO, WARNING, ERROR, INPUT_REQUEST, DEBUG};
 	
 	public static Config permanentConfiguration;
 	public static ApiProvider apiProvider;
@@ -33,61 +34,67 @@ public class main
 	public static void loadConfig() throws Exception {
 		String configFilePath = FileSystemProvider.getInstance().getConfigFilePath();
 		permanentConfiguration = Config.loadOrNew(configFilePath);		
-		w("Loading configuration from " + configFilePath + " ...", LogLevel.DEBUG);
+		Output.write("Loading configuration from " + configFilePath + " ...", Output.LogLevel.DEBUG);
 	}
 	
 	/*
 	 * Init API provider with auth data from the permanent configuration
 	 */
 	public static void loadApiProvider() {
-		if (apiProvider == null) {
-			apiProvider = new ApiProvider(API_KEY);
-			
-			// please, PLEASE use SSL
-			apiProvider.configuration.useSSL = true;
-			
-			// attach an hook to log requests
-			apiProvider.registerHook("beforeRequest", new ApiHook() {
-				@Override
-				public void hook(HashMap<String, Object> data) {
-					w("sending api request to " + (String)data.get("url") + " ...", LogLevel.DEBUG);
-				}
-			});
-		}
+		apiProvider = new ApiProvider(API_KEY);
 		
 		apiProvider.configuration.username = permanentConfiguration.username;
 		apiProvider.configuration.password = permanentConfiguration.password;
+		
+		/* please, PLEASE use SSL
+		 * this will be forced soon
+		 */
+		apiProvider.configuration.useSSL = true;
+		
+		// attach an hook to log requests
+		apiProvider.registerHook(ApiHookPoints.BEFORE_REQUEST, new ApiHook() {
+			@Override
+			public void hook(ApiHookDataBundle data) {
+				Output.write("[log] sending api request to " + (String)data.get("url") + " ...", Output.LogLevel.DEBUG);
+			}
+		});
+		apiProvider.registerHook(ApiHookPoints.REQUEST_EXCEPTION, new ApiHook() {
+			@Override
+			public void hook(ApiHookDataBundle data) {
+				Output.write("[log] error sending api request: " + ((Exception)data.get("exception")).getMessage(), Output.LogLevel.DEBUG);
+			}
+		});
 	}
 	
 	public static void main(String []args) throws Exception {
 		// load permanent configuration data
 		loadConfig();
 		
-		// instantiate api provider
+		// instantiate API provider
 		loadApiProvider();
 		
-		// check auth data. If invalid, ask the user for new data
+		// check authentication data. If invalid, ask the user for new data
 		while (!checkAuthData()) {
 			askUserData();
 			permanentConfiguration.save();
 		}
 		
 		// sample usage for the data. userDetails gets filled in checkAuthData()
-		w("");
+		Output.write("");
 		
-		w("Welcome " + 
+		Output.write("Welcome " + 
 				(String)userDetails.get("name") + " !");
 		
-		w("your registration email is " + 
+		Output.write("your registration email is " + 
 				(String)userDetails.get("email"));
 		
-		w("bandwidth used: " + 
+		Output.write("bandwidth used: " + 
 				userDetails.get("bandwidth") + " B / " + 
 				userDetails.get("max_bandwidth") + " B");
     }
 	
 	/*
-	 * Return true if current auth data is valid
+	 * Return true if current authentication data is valid
 	 */
 	public static boolean checkAuthData() throws Exception {
 		// I may just not have the data at all
@@ -96,7 +103,7 @@ public class main
 			return false;
 		}
 		
-		// Launch an API request to the user.info command point to check auth data
+		// Launch an API request to the user.info command point to check authentication data
 		ApiRequest request = apiProvider.createRequest();
 		request.command = "user.info";
 		
@@ -106,7 +113,7 @@ public class main
 			response = request.execute();
 		}
 		catch (Exception e) {
-			w("Auth data check failed: " + e.getMessage(), LogLevel.WARNING);
+			Output.write("Auth data check failed: " + e.getMessage(), Output.LogLevel.WARNING);
 			return false;
 		}
 		
@@ -124,41 +131,31 @@ public class main
 		}
 		else {
 			// request failed
-			w("Auth data check failed: " + ApiUtils.getCodeDescription(response.code), LogLevel.WARNING);
+			Output.write("Auth data check failed: " + ApiUtils.getCodeDescription(response.code), Output.LogLevel.WARNING);
 			return false;
 		}
 	}
 	
 	/*
-	 * Ask the user for auth data input
+	 * Ask the user for authentication data input
 	 */
 	public static void askUserData() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         
-        w("Please provide valid login credentials for " + 
-        		apiProvider.configuration.endPoint, LogLevel.INPUT_REQUEST);
+        Output.write("Please provide valid login credentials for " + 
+        		apiProvider.configuration.endPoint, Output.LogLevel.INPUT_REQUEST);
         
-        w("Username : ", LogLevel.INPUT_REQUEST);
+        Output.write("Username: ", Output.LogLevel.INPUT_REQUEST);
         permanentConfiguration.username = br.readLine();
         
-        w("Password : ", LogLevel.INPUT_REQUEST);
+        Output.write("Password: ", Output.LogLevel.INPUT_REQUEST);
         permanentConfiguration.password = br.readLine();
         
         // Reload new settings in API provider
-        loadApiProvider();
+        apiProvider.configuration.username = permanentConfiguration.username;
+        apiProvider.configuration.password = permanentConfiguration.password;
         
         // be kind
-        w("Thank you. I will now check the data.", LogLevel.INPUT_REQUEST);
-	}
-	
-	/*
-	 * Wrapper for println just in case I'll decide to filter the output
-	 */
-	public static void w(String text, LogLevel level) {
-		System.out.println(text);
-	}
-	
-	public static void w(String text) {
-		w(text, LogLevel.INFO);
+        Output.write("Thank you. I will now check the data.", Output.LogLevel.INPUT_REQUEST);
 	}
 }

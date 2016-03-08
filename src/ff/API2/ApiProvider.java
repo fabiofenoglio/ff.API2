@@ -12,10 +12,10 @@ public class ApiProvider {
 	/*
 	 * Keyed list of hook callbacks
 	 */
-	protected HashMap<String, ArrayList<ApiHook>> hooks;
+	protected HashMap<Integer, ArrayList<ApiHook>> hooks;
 	
 	public ApiProvider(String apiKey) {
-		this.hooks = new HashMap<String, ArrayList<ApiHook>>();
+		this.hooks = new HashMap<Integer, ArrayList<ApiHook>>();
 		
 		this.configuration = new ApiConfiguration();
 		this.configuration.apiKey = apiKey;
@@ -32,7 +32,7 @@ public class ApiProvider {
 	/*
 	 * Get a list of hook callbacks by key
 	 */
-	public ArrayList<ApiHook> getHooks(String key) {
+	public ArrayList<ApiHook> getHooks(Integer key) {
 		return this.hooks.get(key);
 	}
 	
@@ -40,17 +40,30 @@ public class ApiProvider {
 	 * Returns true if at least on callback is registered
 	 * for the given key
 	 */
-	public boolean hasHooks(String key) {
+	public boolean hasHooks(Integer key) {
 		return this.hooks.containsKey(key);
 	}
 	
 	/*
 	 * Add a callback with the given key
 	 */
-	public void registerHook(String key, ApiHook hook) {
+	public void registerHook(Integer key, ApiHook hook) {
 		if (!this.hooks.containsKey(key)) {
 			this.hooks.put(key, new ArrayList<ApiHook>());
 		}
 		this.hooks.get(key).add(hook);
+	}
+	
+	/*
+	 * Process an hook point
+	 */
+	public void processHook(Integer key, ApiHookDataBundle data) {
+		if (!this.hasHooks(key)) {
+			return;
+		}
+		
+		for (ApiHook hookInstance : this.getHooks(key)) {
+    		hookInstance.hook(data);
+    	}
 	}
 }
