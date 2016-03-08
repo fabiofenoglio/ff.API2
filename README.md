@@ -32,11 +32,11 @@ then execute it and get the response
 ```sh
 ApiResponse response = request.execute();
 
-if (! response.success) {
-    System.out.println("Error: " + ApiUtils.getCodeDescription(response.code));
+if (response.success) {
+    System.out.println("Welcome " + (String)response.data.get("name") + " !");
 }
 else {
-    System.out.println("Welcome " + (String)response.data.get("name") + " !");
+    System.out.println("Error: " + ApiUtils.getCodeDescription(response.code));
 }
 ```
 
