@@ -152,8 +152,7 @@ public class main
         permanentConfiguration.password = br.readLine();
         
         // Reload new settings in API provider
-        apiProvider.configuration.username = permanentConfiguration.username;
-        apiProvider.configuration.password = permanentConfiguration.password;
+        apiProvider.setCredentials(permanentConfiguration.username, permanentConfiguration.password);
         
         // be kind
         Output.write("Thank you. I will now check the data.", Output.LogLevel.INPUT_REQUEST);

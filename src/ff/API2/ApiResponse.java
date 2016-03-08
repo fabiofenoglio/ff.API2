@@ -14,11 +14,13 @@ public class ApiResponse {
 	
 	/*
 	 * True if (requestCompleted) AND the result code is 1 ('success')
+	 * failed is just !success, for readability
 	 */
 	public boolean success = false;
+	public boolean failed = true;
 	
 	/*
-	 * Code should be 1 for 'success'
+	 * Code should be SUCCESS_CODE for 'success'
 	 */
 	public Long code = (long)0;
 	
@@ -80,5 +82,6 @@ public class ApiResponse {
 		this.hasData = data != null;
 		this.requestCompleted = true;
 		this.success = this.code == ApiResponse.SUCCESS_CODE;
+		this.failed = !this.success;
 	}
 }

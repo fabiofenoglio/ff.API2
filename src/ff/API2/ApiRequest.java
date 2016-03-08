@@ -188,6 +188,11 @@ public class ApiRequest {
 			uri = uri.substring(0, uri.length() - 1);
 		}
 		
+		if (uri.startsWith("http:")) {
+			System.out.println("[" + this.getClass().getPackage().getName() + 
+					" warning] you should really use SSL connection. Open http connections will soon be prohibited.");
+		}
+		
 		return uri;
 	}
 }

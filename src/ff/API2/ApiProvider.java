@@ -30,6 +30,14 @@ public class ApiProvider {
 	}
 	
 	/*
+	 * shortcut to set credentials
+	 */
+	public void setCredentials(String username, String password) {
+		this.configuration.username = username;
+		this.configuration.password = password;
+	}
+	
+	/*
 	 * Get a list of hook callbacks by key
 	 */
 	public ArrayList<ApiHook> getHooks(Integer key) {

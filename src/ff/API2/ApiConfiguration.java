@@ -9,7 +9,7 @@ public class ApiConfiguration {
 	
 	public String apiKey = "";
 	
-	public String endPoint = "api.fabiofenoglio.it";
+	public String endPoint = "https://api.fabiofenoglio.it";
 	
 	/*
 	 * useSSL will add https protocol only if endPoint does not already
